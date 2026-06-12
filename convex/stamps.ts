@@ -25,3 +25,10 @@ export const listBySession = query({
       .collect();
   },
 });
+
+export const listAll = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db.query("stamps").collect();
+  },
+});

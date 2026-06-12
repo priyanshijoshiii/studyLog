@@ -13,6 +13,19 @@ export default function App() {
   const [seconds, setSeconds] = useState(0);
   const [sessionId, setSessionId] = useState<Id<"sessions"> | null>(null);
   const [stampNote, setStampNote] = useState("");
+  const [expandedSessions, setExpandedSessions] = useState<Set<string>>(new Set());
+
+    const toggleSession = (id: string) => {
+    setExpandedSessions(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    })};
+  
 
   const lang: 'ru' | 'en' = navigator.language.startsWith('ru') ? 'ru' : 'en'
 
@@ -21,10 +34,13 @@ export default function App() {
   const addStamp = useMutation(api.stamps.add);
   
   const sessions = useQuery(api.sessions.list);
+  const allStamps = useQuery(api.stamps.listAll);
   const stamps = useQuery(
     api.stamps.listBySession,
     sessionId ? { sessionId } : "skip"
   );  
+
+  
 
   useEffect(() => {
     if (state !== "countdown") return;
@@ -320,30 +336,73 @@ useEffect(() => {
             <p style={{ color: "#555", fontSize: "14px" }}>no sessions yet</p>
           )}
 
-          {sessions && sessions.map(session => (
-            <div key={session._id} style={{
-              borderTop: "1px solid #111",
-              paddingTop: "16px",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "flex-start",
-            }}>
-              <p style={{ margin: 0, color: "#888", fontSize: "14px" }}>
-                {formatTimestamp(session.startTime, lang)}
-              </p>
-              <p style={{ margin: 0, color: "#555", fontSize: "14px" }}>
-                {session.endTime
-                  ? (() => {
-                      const mins = Math.floor((session.endTime - session.startTime) / 60000)
-                      const hrs = Math.floor(mins / 60)
-                      const remainMins = mins % 60
-                      return hrs > 0 ? `${hrs}h ${remainMins}m` : `${mins}m`
-                    })()
-                  : "in progress"
-                }
-              </p>
-            </div>
-          ))}
+          {sessions && sessions.map(session => {
+            const sessionStamps = allStamps?.filter(stamp => stamp.sessionId === session._id) ?? [];
+            const isExpanded = expandedSessions.has(session._id);
+
+            return (
+              <div key={session._id} style={{
+                borderTop: "1px solid #111",
+                paddingTop: "16px",
+                display: "flex",
+                flexDirection: "column",
+                gap: "8px",
+              }}>
+                <div
+                  onClick={() => toggleSession(session._id)}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "flex-start",
+                    cursor: sessionStamps.length > 0 ? "pointer" : "default",
+                  }}
+                >
+                  <p style={{ margin: 0, color: "#888", fontSize: "14px" }}>
+                    {formatTimestamp(session.startTime, lang)}
+                    {sessionStamps.length > 0 && (
+                      <span style={{ color: "#444", marginLeft: "8px" }}>
+                        {isExpanded ? "▾" : "▸"} {sessionStamps.length} stamps
+                      </span>
+                    )}
+                  </p>
+                  <p style={{ margin: 0, color: "#555", fontSize: "14px" }}>
+                    {session.endTime
+                      ? (() => {
+                          const mins = Math.floor((session.endTime - session.startTime) / 60000)
+                          const hrs = Math.floor(mins / 60)
+                          const remainMins = mins % 60
+                          return hrs > 0 ? `${hrs}h ${remainMins}m` : `${mins}m`
+                        })()
+                      : "in progress"
+                    }
+                  </p>
+                </div>
+
+                {isExpanded && sessionStamps.map(stamp => (
+                  <div key={stamp._id} style={{
+                    paddingLeft: "12px",
+                    display: "grid",
+                    gridTemplateColumns: "1fr auto",
+                    gap: "8px",
+                    alignItems: "start",
+                  }}>
+                    <p style={{
+                      margin: 0,
+                      color: "#444",
+                      fontSize: "12px",
+                      wordBreak: "break-all",
+                      overflowWrap: "break-word",
+                    }}>
+                      · {stamp.note}
+                    </p>
+                    <span style={{ color: "#333", fontSize: "11px", whiteSpace: "nowrap" }}>
+                      {formatTimestamp(stamp.createdAt, lang)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            );
+          })}
         </div>
       )}       
  

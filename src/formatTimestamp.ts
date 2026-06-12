@@ -12,31 +12,50 @@
  * @param lang - Language code: 'en' for English (12h), 'ru' for Russian (24h)
  * @returns Formatted time string, or empty string for invalid input
  */
-export function formatTimestamp(ts: number, lang: 'ru' | 'en'): string {
-  if (typeof ts !== 'number' || isNaN(ts)) {
-    return ''
-  }
+const formatters = {
+    enTime: new Intl.DateTimeFormat('en-US', {hour: 'numeric', minute:'2-digit', hour12: true}),
+    ruTime: new Intl.DateTimeFormat('ru-RU', {hour:'2-digit', minute: '2-digit'}),
+    enDate: new Intl.DateTimeFormat('en-US', {month: 'short', day:'numeric'}),
+    ruDate: new Intl.DateTimeFormat('ru-RU', {month: 'short', day:'numeric'}),
+}
 
-  const date = new Date(ts)
-  if (isNaN(date.getTime())) {
-    return ''
-  }
+export function formatTimestamp(ts: number, lang: 'ru' | 'en' ):string{
+    
+    //defensive runtime validation in case the function i called from untyped javascript or external use
+    const safeLang: 'ru' | 'en' = (lang === 'ru' || lang === 'en') ? lang : 'en'
+    
+    //step1 : validate input
+    if(!Number.isFinite(ts)){
+        return '' // or maybe invailid input
+    }
 
-  const now = new Date()
+    const date = new Date(ts);
+    if(isNaN(date.getTime())){
+        return ''
+    }
 
-  const isToday = date.getDate() === now.getDate() &&
-                  date.getMonth() === now.getMonth() &&
-                  date.getFullYear() === now.getFullYear()
+    const now = new Date()
 
-  const timeStr = lang === 'ru'
-    ? date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
-    : date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+    //step2: check if same calender date(not hours elapsed)
+    try{
+        const isToday = date.getDate() === now.getDate() && date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
 
-  if (isToday) return timeStr
+            // step3: format time only
+            const timeStr = safeLang === 'ru' 
+            ? formatters.ruTime.format(date)
+            : formatters.enTime.format(date)
 
-  const dateStr = lang === 'ru'
-    ? date.toLocaleDateString('ru-RU', { month: 'short', day: 'numeric' })
-    : date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+            //step4: if today return just time
+            if(isToday) return timeStr;
 
-  return dateStr + ' · ' + timeStr
+            //step5: if not today, return date+ time
+            const dateStr = safeLang === 'ru'
+            ? formatters.ruDate.format(date)
+            : formatters.enDate.format(date)
+
+
+            return dateStr + ' · ' + timeStr        
+    } catch{
+        return ''
+    }
 }
