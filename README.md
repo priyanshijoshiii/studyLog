@@ -1,73 +1,46 @@
-# React + TypeScript + Vite
+# StudyLog
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A minimal, distraction-free study session tracker.
 
-Currently, two official plugins are available:
+**Live demo:** https://study-log-rose.vercel.app/
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## What it does
 
-## React Compiler
+- Start a study session with a 3-2-1 countdown
+- Live timer counts up in `HH:MM:SS`
+- Add timestamped notes during a session to mark what you're working on — timer pauses while you type
+- Take a break — timer pauses, resume when ready
+- Stop a session — saved permanently
+- View all previous sessions with duration and timestamps
+- Automatically displays times in English (12h) or Russian (24h) based on browser language
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Why
 
-## Expanding the ESLint configuration
+Most study trackers are cluttered with streaks, badges, and social features. StudyLog is just a timer, a way to mark moments during a session, and a history of past sessions — nothing else.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Tech Stack
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- **Frontend:** React + TypeScript (Vite)
+- **Backend:** Convex (database, queries, mutations, real-time sync)
+- **Deployment:** Vercel (frontend) + Convex Cloud (backend)
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Project Structure
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+studylog/
+├── convex/
+│   ├── schema.ts      # database tables: sessions, stamps
+│   ├── sessions.ts    # start, stop, list sessions
+│   └── stamps.ts      # add, list stamps for a session
+├── src/
+│   ├── App.tsx              # main UI and app logic
+│   └── formatTimestamp.ts   # timestamp formatting utility
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Running Locally
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npx convex dev      # starts Convex backend
+npm run dev         # starts frontend (separate terminal)
 ```
