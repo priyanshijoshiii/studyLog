@@ -235,7 +235,7 @@ useEffect(() => {
             autoFocus
             value={stampNote}
             onChange={e => setStampNote(e.target.value)}
-            placeholder="e.g. linked lists, convex queries..."
+            placeholder="e.g. linked lists, maths, ..."
             style={{
               backgroundColor: "transparent",
               border: "1px solid #fff",
