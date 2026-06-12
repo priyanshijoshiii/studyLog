@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { formatTimestamp } from "./formatTimestamp";
 import { api } from "../convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
+import type { Id } from "../convex/_generated/dataModel";
 
 
 type AppState = "idle" | "countdown" | "studying" | "stamping" | "break" | "history";
@@ -10,7 +11,7 @@ export default function App() {
   const [state, setState] = useState<AppState>("idle");
   const [countdown, setCountdown] = useState(3);
   const [seconds, setSeconds] = useState(0);
-  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [sessionId, setSessionId] = useState<Id<"sessions"> | null>(null);
   const [stampNote, setStampNote] = useState("");
 
   const lang: 'ru' | 'en' = navigator.language.startsWith('ru') ? 'ru' : 'en'
@@ -202,7 +203,7 @@ useEffect(() => {
                   · {stamp.note}
                 </p>
                 <span style={{ color: "#333", fontSize: "13px", whiteSpace: "nowrap" }}>
-                  {formatTimestamp(stamp.createdAt, 'lang')}
+                  {formatTimestamp(stamp.createdAt, lang)}
                 </span>
               </div>
             ))}
